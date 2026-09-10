@@ -22,18 +22,44 @@ async function startServer() {
   });
 }
 
-startServer();
-
 const bricks = db.collection("bricks");
 
-app.post('/bricks', (req, res) => {
+app.post('api/bricks', async (req, res) => {
+  
+  try{
 
-  const newBrick = req.body; // Assuming the request body contains the new brick data
-  newBrick.id = bricks.length + 1; // Assign a unique ID to the new brick
-  bricks.push(newBrick); // Add the new brick to the array
-  res.json(newBrick); // Respond with the newly created brick
+    const newBrick = {
+      title: req.body.title,
+      body: req.body.body,
+      parentID: req.body.parentID || null, // Default to null if not provided
+    }
+
+    const result = await bricks.insertOne(newBrick);
+    res.status(201).json({ message: 'Brick created', brickId: result.insertedId });
+
+    res.json({
+      ...newBrick,
+      id: result.insertedId
+    })
+
+  } catch (error) {
+    console.error('Error creating brick:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+})
+
+app.get('/api/bricks', async (req, res) => {
+
+  try{
+    const allBricks = await bricks.find().toArray()
+
+    res.json(allBricks)
+  } catch (error) {
+    console.error('Error fetching bricks:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 
 })
 
-
+startServer()
 
