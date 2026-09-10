@@ -36,11 +36,13 @@ function displayBrick( brick ) {
 }
 
 async function loadBricks() {
-  const response = await fetch( '/bricks' )
+  const response = await fetch( 'api/bricks' )
   const serverBricks = await response.json()
 
-  bricks.push( ...serverBricks )
-  serverBricks.forEach( displayBrick )
+  if (serverBricks.length > 0) {
+    bricks.push( ...serverBricks )
+    bricks.forEach( displayBrick )
+  }
 }
 
 function brickClicked( event ){
@@ -101,7 +103,7 @@ async function clearWall(){
   const svg = document.getElementById('connection')
   svg.innerHTML = ''
 
-  const response = await fetch( '/bricks', {
+  const response = await fetch( 'api/bricks', {
     method: 'DELETE'
   })
 
@@ -152,7 +154,7 @@ const submit = async function( event ) {
 
   const body = JSON.stringify( brick )
 
-  const response = await fetch( '/bricks', {
+  const response = await fetch( 'api/bricks', {
     method:'POST',
     headers: { 'Content-Type': 'application/json' },
     body 
