@@ -102,9 +102,12 @@ async function clearWall(){
 
   const svg = document.getElementById('connection')
   svg.innerHTML = ''
+  const body = JSON.stringify({ setOfBricks: bricks })
 
   const response = await fetch( 'api/bricks', {
-    method: 'DELETE'
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body
   })
 
   if( response.ok ) {
@@ -112,14 +115,15 @@ async function clearWall(){
     wall.innerHTML = ''
     bricks.length = 0
   }
+  if (bricks.length > 0) {
+    bricks = []
+  }
 }
 
 const clearWallButton = document.getElementById('clearWall')
 if (clearWallButton) {
   clearWallButton.addEventListener('click', clearWall)
 }
-
-
 
 function createBrick( title, body ) {
   let newBrick = {
