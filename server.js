@@ -34,22 +34,31 @@ async function startServer() {
 
 //Login and if no user exists, create a new user with the given username and password
 app.post('/api/login', async (req, res) => {
+  try {
+    const username = req.body.username
+    const password = req.body.password
 
-  const { username, password } = req.body;
+    if (!username || !password) {
+      return res.status(400).json({ message: 'Username and password are required' })
+    }
 
-  const user = await users.findOne({ username: req.body.username });
-  if (!user) {
-    const result = await users.insertOne({ username, password });
-    return res.status(400).json({ message: 'New user created', userId: result.insertedId });
+    const user = await users.findOne({ username })
+    if (!user) {
+      const result = await users.insertOne({ username, password })
+      return res.status(400).json({ message: 'New user created', userId: result.insertedId })
+    }
+
+    const passwordCorrect = password === user.password
+
+    if (!passwordCorrect) {
+      return res.status(400).json({ message: 'Invalid password' })
+    }
+
+    return res.json({ message: 'Login successful' })
+  } catch (error) {
+    console.error('Error logging in:', error)
+    return res.status(500).json({ message: 'Internal server error' })
   }
-
-  const passwordCorrect = compare(password, user.password);
-
-  if (!passwordCorrect) {
-    return res.status(400).json({ message: 'Invalid password' });
-  }
-
-  res.json({ message: 'Login successful' });
 })
 
 app.post('/api/bricks', async (req, res) => {

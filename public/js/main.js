@@ -114,10 +114,9 @@ async function clearWall(){
     const wall = document.querySelector( '#brickWall' )
     wall.innerHTML = ''
     bricks.length = 0
-  }
-  if (bricks.length > 0) {
     bricks = []
   }
+  
 }
 
 const clearWallButton = document.getElementById('clearWall')
@@ -144,32 +143,53 @@ const submit = async function( event ) {
   event.preventDefault()
   
   const form = event.currentTarget
+
+  console.log("Button", form.id, "clicked")
+
   const formData = new FormData( form )
-  brickID = bricks.length
+  if(form.id === "loginForm"){
+    const username = formData.get('username')
+    const password = formData.get('password')
 
-  const brick = createBrick(
-    formData.get( 'title' ),
-    formData.get( 'body' )
-  )
+    const body = JSON.stringify({ username, password })
 
-  bricks.push( brick )
-  displayBrick( brick )
-  //console.log( 'bricks:', bricks )
+    const response = await fetch('api/login', {
+      method:'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body
+    })
 
-  const body = JSON.stringify( brick )
+    console.log("login attempted, U:" , username, "P:", password)
+    const text = await response.text()
+    console.log(text)
+    return
+  } else{
+    brickID = bricks.length
 
-  const response = await fetch( 'api/bricks', {
-    method:'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body 
-  })
+    const brick = createBrick(
+      formData.get( 'title' ),
+      formData.get( 'body' )
+    )
 
-  const text = await response.text()
+    bricks.push( brick )
+    displayBrick( brick )
+    //console.log( 'bricks:', bricks )
 
-  console.log( 'text:', text )
+    const body = JSON.stringify( brick )
 
-  if (form.id === 'firstBrickForm') {
-    window.location.href = 'wall.html'
+    const response = await fetch( 'api/bricks', {
+      method:'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body 
+    })
+
+    const text = await response.text()
+
+    console.log( 'text:', text )
+
+    if (form.id === 'firstBrickForm') {
+      window.location.href = 'wall.html'
+    }
   }
 }
 
