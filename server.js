@@ -19,9 +19,10 @@ let db;
 let bricks;
 
 async function startServer() {
-  await client.connect().then(() => {
-    console.log('Connected to MongoDB Atlas')
-  }) 
+  await client.connect()
+  
+  console.log('Connected to MongoDB Atlas')
+   
   
   db = client.db("brickWall") // Use the "brickWall" database
   bricks = db.collection('bricks')
@@ -43,6 +44,7 @@ app.post('/api/login', async (req, res) => {
     }
 
     const user = await users.findOne({ username })
+    console.log(username, password, user)
     if (!user) {
       const result = await users.insertOne({ username, password })
       return res.status(400).json({ message: 'New user created', userId: result.insertedId })
@@ -113,8 +115,13 @@ app.delete('/api/bricks/', async (req, res) => {
   }
 });
 
-startServer().catch((error) => {
+(async function() {
+  await startServer()
+
+})()
+/*
+await startServer().catch((error) => {
   console.error('Unable to start server:', error)
   process.exitCode = 1
-})
+})*/
 

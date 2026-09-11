@@ -162,6 +162,7 @@ const submit = async function( event ) {
     console.log("login attempted, U:" , username, "P:", password)
     const text = await response.text()
     console.log(text)
+    if(response.message == 'Login successful' || response.message == 'New user created'){window.location.href='firstBrick.html'}
     return
   } else{
     brickID = bricks.length
