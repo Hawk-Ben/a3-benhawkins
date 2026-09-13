@@ -47,7 +47,7 @@ app.post('/api/login', async (req, res) => {
     console.log(username, password, user)
     if (!user) {
       const result = await users.insertOne({ username, password })
-      return res.status(400).json({ message: 'New user created', userId: result.insertedId })
+      return res.status(201).json({ message: 'New user created', userID: result.insertedId.toString() })
     }
 
     const passwordCorrect = password === user.password
@@ -56,7 +56,7 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid password' })
     }
 
-    return res.json({ message: 'Login successful' })
+    return res.json({ message: 'Login successful', userID: user._id.toString() })
   } catch (error) {
     console.error('Error logging in:', error)
     return res.status(500).json({ message: 'Internal server error' })
@@ -101,13 +101,9 @@ app.get('/api/bricks', async (req, res) => {
 //await bricks.deleteOne({ id: brickID });
 app.delete('/api/bricks/', async (req, res) => {
   try {
-    const bricksToDelete = res.body.setOfBricks;
-    if (!Array.isArray(bricksToDelete)) {
-      return res.status(400).json({ message: 'Invalid request body. Expected an array of bricks.' });
-    }
-
-    await bricks.remove({})
-
+    await bricks.deleteMany({
+      userID: res.body
+    })
     res.json({ message: 'All bricks deleted successfully' });
   } catch (error) {
     console.error('Error deleting brick:', error);

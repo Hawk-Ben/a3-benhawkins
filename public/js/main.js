@@ -2,8 +2,12 @@
 const bricks = []
 let brickID = 0
 let selectedBrickID = -1
+let userID = null
 
 function displayBrick( brick ) {
+  if(userID != brick.user){
+    return
+  }
   const brickElement = document.createElement( 'div' )
 
   brickElement.dataset.id = brick.id
@@ -102,7 +106,7 @@ async function clearWall(){
 
   const svg = document.getElementById('connection')
   svg.innerHTML = ''
-  const body = JSON.stringify({ setOfBricks: bricks })
+  const body = JSON.stringify(userID)
 
   const response = await fetch( 'api/bricks', {
     method: 'DELETE',
@@ -129,7 +133,8 @@ function createBrick( title, body ) {
     id: brickID++,
     title: title,
     body: body,
-    parentID: selectedBrickID
+    parentID: selectedBrickID,
+    user: userID
   }
   console.log( 'newBrick:', newBrick )
   return newBrick
@@ -160,9 +165,14 @@ const submit = async function( event ) {
     })
 
     console.log("login attempted, U:" , username, "P:", password)
-    const text = await response.text()
-    console.log(text)
-    if(response.message == 'Login successful' || response.message == 'New user created'){window.location.href='firstBrick.html'}
+    const data = await response.json()
+    console.log(data)
+    if (data.userID) {
+      const userID = data.userID
+      window.location.href='firstBrick.html'
+    }else{
+      const userID = null
+    }
     return
   } else{
     brickID = bricks.length
