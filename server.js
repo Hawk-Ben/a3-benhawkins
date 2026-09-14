@@ -114,7 +114,9 @@ app.delete('/api/bricks', async (req, res) => {
 
 app.put("/api/bricks/:id", async (req,res) => {
 
-  const id = req.params.id
+  const id = Number(req.params.id);
+
+  console.log("Editing brick:",id);
 
   const result = await bricks.updateOne(
     {id: id},
@@ -124,8 +126,9 @@ app.put("/api/bricks/:id", async (req,res) => {
         body: req.body.body
       }
     }
-  )
-  res.json(result)
+  );
+
+  res.json(result);
 });
 
 (async function() {
