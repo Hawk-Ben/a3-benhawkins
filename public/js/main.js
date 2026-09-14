@@ -1,11 +1,11 @@
 // FRONT-END (CLIENT) JAVASCRIPT HERE
-const bricks = []
+let  bricks = []
 let brickID = 0
 let selectedBrickID = -1
-let userID = null
+let userID = sessionStorage.getItem('brickWallUserID') || null
 
 function displayBrick( brick ) {
-  if(userID != brick.user){
+  if (userID && brick.userID !== userID) {
     return
   }
   const brickElement = document.createElement( 'div' )
@@ -106,7 +106,7 @@ async function clearWall(){
 
   const svg = document.getElementById('connection')
   svg.innerHTML = ''
-  const body = JSON.stringify(userID)
+  const body = JSON.stringify({userID: userID})
 
   const response = await fetch( 'api/bricks', {
     method: 'DELETE',
@@ -118,7 +118,7 @@ async function clearWall(){
     const wall = document.querySelector( '#brickWall' )
     wall.innerHTML = ''
     bricks.length = 0
-    bricks = []
+    bricks = [] 
   }
   
 }
@@ -134,7 +134,7 @@ function createBrick( title, body ) {
     title: title,
     body: body,
     parentID: selectedBrickID,
-    user: userID
+    userID: userID
   }
   console.log( 'newBrick:', newBrick )
   return newBrick
@@ -168,10 +168,12 @@ const submit = async function( event ) {
     const data = await response.json()
     console.log(data)
     if (data.userID) {
-      const userID = data.userID
-      window.location.href='firstBrick.html'
-    }else{
-      const userID = null
+      userID = data.userID
+      sessionStorage.setItem('brickWallUserID', userID)
+      window.location.href = 'firstBrick.html'
+    } else {
+      userID = null
+      sessionStorage.removeItem('brickWallUserID')
     }
     return
   } else{

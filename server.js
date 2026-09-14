@@ -99,10 +99,11 @@ app.get('/api/bricks', async (req, res) => {
 
 })
 //await bricks.deleteOne({ id: brickID });
-app.delete('/api/bricks/', async (req, res) => {
+app.delete('/api/bricks', async (req, res) => {
   try {
+    const deletingUserID = req.body.userID
     await bricks.deleteMany({
-      userID: res.body
+      userID: deletingUserID
     })
     res.json({ message: 'All bricks deleted successfully' });
   } catch (error) {
