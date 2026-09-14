@@ -1,7 +1,7 @@
 require('dotenv').config({ path: 'atlas-credentials.env' })
 
 const express = require('express')
-const {MongoClient} = require('mongodb')
+const {MongoClient, ObjectId} = require('mongodb')
 const app = express()
 const port = 3000
 
@@ -110,6 +110,22 @@ app.delete('/api/bricks', async (req, res) => {
     console.error('Error deleting brick:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
+});
+
+app.put("/api/bricks/:id", async (req,res) => {
+
+  const id = req.params.id
+
+  const result = await bricks.updateOne(
+    {id: id},
+    {
+      $set: {
+        title: req.body.title,
+        body: req.body.body
+      }
+    }
+  )
+  res.json(result)
 });
 
 (async function() {

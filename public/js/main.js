@@ -4,6 +4,10 @@ let brickID = 0
 let selectedBrickID = -1
 let userID = sessionStorage.getItem('brickWallUserID') || null
 
+const editBrickForm = document.getElementById("brickEditForm")
+const editTitle = document.getElementById('editTitle')
+const editBody = document.getElementById('editBody')
+
 function displayBrick( brick ) {
   if (userID && brick.userID !== userID) {
     return
@@ -53,7 +57,7 @@ function brickClicked( event ){
   const brickElement = event.currentTarget
   selectedBrickID = brickElement.dataset.id
   const selectedBrick = bricks.find( function( brick ) {
-    return String( brick.id ) === selectedBrickID
+    return String(brick.id)  === selectedBrickID
   })
 
   document.querySelectorAll( '.brick.selected' ).forEach( function( element ) {
@@ -64,9 +68,17 @@ function brickClicked( event ){
   console.log( 'selectedBrickID:', selectedBrickID )
   console.log( 'Selected brick', selectedBrick )
 
+  editTitle.placeholder = selectedBrick.title
+  editBody.placeholder = selectedBrick.body
+
+
 }
 
 function drawLine(brick1, brick2) {
+  if(!brick1 || !brick2){
+    console.log("drawing between undefined spaces")
+    return
+  }
   console.log('Drawing line between', brick1, 'and', brick2)
   const svg = document.getElementById('connection')
   const wall = document.getElementById('brickWall')
@@ -140,6 +152,7 @@ function createBrick( title, body ) {
   return newBrick
 }
 
+
 const submit = async function( event ) {
   // stop form submission from trying to load
   // a new .html page for displaying results...
@@ -152,7 +165,63 @@ const submit = async function( event ) {
   console.log("Button", form.id, "clicked")
 
   const formData = new FormData( form )
-  if(form.id === "loginForm"){
+
+  if(form.id === 'editForm'){
+    if(selectedBrickID == -1){
+      return //No brick selected, please please please dont crash my website
+    }
+    //Step 1: What are we editing
+    let newTitle = formData.get("title")
+    let newBody = formData.get("body")
+    oldBrick = bricks.find(function( brick ) {return String( brick.id ) === selectedBrickID})
+    serverBrickID = oldBrick._id
+
+    if(!newTitle){
+      newTitle = oldBrick.title
+    }
+    if(!newBody){
+      newBody = oldBrick.body
+    }
+
+    console.log("edited information gathered: step 1 complete")
+
+    //Step 2: Replace the brick in bricks
+    let newBrick = {
+    id: selectedBrickID,
+    title: newTitle,
+    body: newBody,
+    parentID: oldBrick.parentID,
+    userID: userID
+    }
+
+    removeBrick(bricks, selectedBrickID)
+    bricks.push(newBrick)
+
+    console.log("Edited local storage: step 2 complete")
+
+    //Step 3: Edit the database
+    const response = await fetch(`/api/bricks/${selectedBrickID}`,{
+      method: "PUT",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: newTitle,
+        body: newBody
+      })
+    })
+    console.log("Edited server storage: step 3 complete")
+
+    const wall = document.querySelector( '#brickWall' )
+    wall.innerHTML = ''
+
+    displayBrick(newBrick)
+
+    console.log(response.json)
+    return
+
+
+  }
+
+  else if(form.id === "loginForm"){
     const username = formData.get('username')
     const password = formData.get('password')
 
@@ -176,7 +245,7 @@ const submit = async function( event ) {
       sessionStorage.removeItem('brickWallUserID')
     }
     return
-  } else{
+  } else if(form.id === 'childBrickForm' || form.id === 'firstBrickForm'){
     brickID = bricks.length
 
     const brick = createBrick(
@@ -203,6 +272,15 @@ const submit = async function( event ) {
     if (form.id === 'firstBrickForm') {
       window.location.href = 'wall.html'
     }
+  }else{
+    console.log("mystery button found")
+  }
+}
+
+function removeBrick(bricks, idToRemove){
+  const index = bricks.findIndex(brick => brick.id === idToRemove)
+  if(index !== -1){
+    bricks.splice(index, 1)
   }
 }
 

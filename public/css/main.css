@@ -103,7 +103,7 @@ body {
   gap: 10px;
 }
 
-#childBrickForm{
+.childBrickForm{
   display: flex;
   flex-direction: column;
   justify-content: center;
